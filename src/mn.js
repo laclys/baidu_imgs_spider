@@ -1,7 +1,11 @@
 const puppeteer = require('puppeteer')
 const {mn} = require('./config/default')
-const srcToImg = require('./helper/srcToImg');
-(async () => {
+const srcToImg = require('./helper/srcToImg')
+const {argv} = process
+
+const DEFAULT_KW = '日本'
+
+~(async () => {
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
   await page.goto('https://image.baidu.com')
@@ -14,8 +18,9 @@ const srcToImg = require('./helper/srcToImg');
   console.log('reset viewport')
 
   await page.focus('#kw')
-
-  await page.keyboard.sendCharacter('日本')
+  // console.log(argv)
+  let keyWord = argv[2] ? argv[2] : DEFAULT_KW
+  await page.keyboard.sendCharacter(keyWord)
   await page.click('.s_search')
   console.log('go to list page')
 
@@ -27,8 +32,9 @@ const srcToImg = require('./helper/srcToImg');
       return Array.prototype.map.call(images, img => img.src)
     })
     console.log(`get ${srcs.length} images`)
-    srcs.forEach(element => {
-      srcToImg(element, mn)
+    srcs.forEach(async (element) => {
+      await page.waitFor(200)
+      await srcToImg(element, mn)
     })
     await browser.close()
   })
